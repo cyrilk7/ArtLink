@@ -5,12 +5,16 @@ import datetime
 from flask_jwt_extended import create_access_token, JWTManager, get_jwt_identity, jwt_required
 import secrets
 from datetime import timedelta, datetime
+from dotenv import load_dotenv
+import os
 
+
+load_dotenv()
 
 # Initialize Flask App
 app = Flask(__name__)
 # Generate a secure random key
-app.config['JWT_SECRET_KEY'] = "0a65sd1a6wlkncd[a0 s9y][q-09ej"
+app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 
 # Initialize Firestore DB
 cred = credentials.Certificate('artlink-56f38-firebase-adminsdk-2th85-a12925cada.json')
