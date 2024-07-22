@@ -1,12 +1,52 @@
+import 'package:ashlink/controllers/user_controller.dart';
 import 'package:ashlink/pages/sub_pages/sign_up.dart';
 import 'package:ashlink/widgets/custom_icon_button.dart';
 import 'package:ashlink/widgets/custom_nav_bar.dart';
+import 'package:ashlink/widgets/custom_text_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final UserController _userController = UserController();
+  String _errorMessage = '';
+
+  void _login() async {
+    String username = _usernameController.text;
+    String password = _passwordController.text;
+
+    try {
+      String token = await _userController.loginUser(username, password);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', token);
+
+      // print('Login successful: $token');
+
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const CustomNavBar(
+            initialIndex: 0,
+          ),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,69 +94,27 @@ class LoginPage extends StatelessWidget {
             const SizedBox(
               height: 40,
             ),
-            Text(
-              'Email',
-              style: GoogleFonts.museoModerno(
-                textStyle: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Container(
-              width: double.infinity, // Takes up the full width of the screen
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(
-                    255, 231, 231, 237), // Grey background color
-                borderRadius:
-                    BorderRadius.circular(5), // Rounded corners (optional)
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.all(16.0),
-                  hintText: 'jane.doe@gmail.com',
-                  hintStyle: TextStyle(
-                      color: Colors.grey[600]), // Placeholder text color
-                ),
-              ),
+            CustomTextField(
+              label: 'Username',
+              hintText: 'janedoe7',
+              controller: _usernameController,
             ),
             const SizedBox(
               height: 30,
             ),
-            Text(
-              'Password',
-              style: GoogleFonts.museoModerno(
-                textStyle: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Container(
-              width: double.infinity, // Takes up the full width of the screen
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(
-                    255, 231, 231, 237), // Grey background color
-                borderRadius:
-                    BorderRadius.circular(5), // Rounded corners (optional)
-              ),
-              child: TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.all(16.0),
-                  hintText: '********',
-                  hintStyle: TextStyle(
-                      color: Colors.grey[600]), // Placeholder text color
-                ),
-              ),
+            CustomTextField(
+              hideText: true,
+              label: 'Password',
+              hintText: '********',
+              controller: _passwordController,
             ),
             const SizedBox(
               height: 30,
@@ -125,15 +123,7 @@ class LoginPage extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context); // Is this right?
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CustomNavBar(
-                        initialIndex: 0,
-                      ),
-                    ),
-                  );
+                  _login();
                 },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,

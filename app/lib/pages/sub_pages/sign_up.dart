@@ -1,8 +1,18 @@
+import 'dart:convert';
+
+import 'package:ashlink/controllers/user_controller.dart';
+import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/pages/sub_pages/login.dart';
+import 'package:ashlink/widgets/custom_alert.dart';
+import 'package:ashlink/widgets/custom_button.dart';
+import 'package:ashlink/widgets/custom_datepicker.dart';
+import 'package:ashlink/widgets/custom_dropdown.dart';
 import 'package:ashlink/widgets/custom_icon_button.dart';
+import 'package:ashlink/widgets/custom_text_field.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -12,18 +22,126 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  DateTime selectedDate = DateTime.now();
+  DateTime? selectedDate;
+  final List<String> genders = ['Male', 'Female'];
+  String? _gender;
+
+  final UserController _userController = UserController();
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  bool isPhoneNumberValid(String phoneNumber) {
+    final RegExp phoneRegExp = RegExp(r'^\+?[1-9]\d{1,14}$');
+    return phoneRegExp.hasMatch(phoneNumber);
+  }
+
+  bool isEmailValid(String email) {
+    final RegExp emailRegExp = RegExp(
+      r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
+  bool allFieldsFilled() {
+    return _usernameController.text.isNotEmpty &&
+        _firstNameController.text.isNotEmpty &&
+        _lastNameController.text.isNotEmpty &&
+        _phoneNumberController.text.isNotEmpty &&
+        _emailController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty &&
+        _confirmPasswordController.text.isNotEmpty &&
+        selectedDate != null &&
+        _gender != null;
+  }
+
+  bool validateFields() {
+    if (!allFieldsFilled()) {
+      showDialog(
+        context: context,
+        builder: (ctx) => CustomAlertDialog(
+            title: 'Missing fields',
+            content: 'Make sure to fill out all fields',
+            onConfirm: Navigator.of(ctx).pop),
+      );
+      return false;
+    }
+
+    if (!isEmailValid(_emailController.text)) {
+      showDialog(
+        context: context,
+        builder: (ctx) => CustomAlertDialog(
+            title: 'Invalid',
+            content: 'Make sure to enter a valid email',
+            onConfirm: Navigator.of(ctx).pop),
+      );
+      return false;
+    }
+
+    if (!isPhoneNumberValid(_phoneNumberController.text)) {
+      showDialog(
+        context: context,
+        builder: (ctx) => CustomAlertDialog(
+            title: 'Invalid',
+            content: 'Make sure to enter a valid phone number',
+            onConfirm: Navigator.of(ctx).pop),
+      );
+      return false;
+    }
+    return true;
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: selectedDate,
-        firstDate: DateTime(2015, 8),
+        firstDate: DateTime(1915, 1),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
       });
+    }
+  }
+
+  void _registerUser() async {
+    try {
+      if (validateFields()) {
+        User user = User(
+          username: _usernameController.text,
+          firstName: _firstNameController.text,
+          lastName: _lastNameController.text,
+          phoneNumber: _phoneNumberController.text,
+          dob: DateFormat('yyyy-MM-dd').format(selectedDate!),
+          email: _emailController.text,
+          gender: _gender!,
+          password: _passwordController.text,
+        );
+
+        await _userController.registerUser(user);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const LoginPage(),
+          ),
+        );
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (ctx) => CustomAlertDialog(
+            title: 'An error occured',
+            content: e.toString(),
+            onConfirm: Navigator.of(ctx).pop),
+      );
+      
     }
   }
 
@@ -42,12 +160,11 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       ),
       body: SafeArea(
-        minimum: EdgeInsets.only(bottom: 10),
+        minimum: const EdgeInsets.only(bottom: 10),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: SizedBox(
-              // height: MediaQuery.of(context).size.height * 1,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,244 +195,82 @@ class _SignUpPageState extends State<SignUpPage> {
                   const SizedBox(
                     height: 20,
                   ),
-                  Text(
-                    'First name',
-                    style: GoogleFonts.museoModerno(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
+                  CustomTextField(
+                    label: 'First name',
+                    hintText: 'Jane',
+                    controller: _firstNameController,
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  Container(
-                    width: double
-                        .infinity, // Takes up the full width of the screen
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          255, 231, 231, 237), // Grey background color
-                      borderRadius: BorderRadius.circular(
-                          5), // Rounded corners (optional)
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16.0),
-                        hintText: 'Jane',
-                        hintStyle: TextStyle(
-                            color: Colors.grey[600]), // Placeholder text color
-                      ),
-                    ),
+                  CustomTextField(
+                    label: 'Last name',
+                    hintText: 'Doe',
+                    controller: _lastNameController,
+                  ),
+                  CustomDatepicker(
+                    label: 'Date of Birth',
+                    selectedDate: selectedDate,
+                    onTap: () => _selectDate(context),
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    'Last name',
-                    style: GoogleFonts.museoModerno(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
+                  CustomDropdown(
+                    label: 'Gender',
+                    value: _gender,
+                    items: genders,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _gender = newValue;
+                      });
+                    },
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  Container(
-                    width: double
-                        .infinity, // Takes up the full width of the screen
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          255, 231, 231, 237), // Grey background color
-                      borderRadius: BorderRadius.circular(
-                          5), // Rounded corners (optional)
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16.0),
-                        hintText: 'Doe',
-                        hintStyle: TextStyle(
-                            color: Colors.grey[600]), // Placeholder text color
-                      ),
-                    ),
+                  CustomTextField(
+                      label: 'Email',
+                      hintText: 'jane.doe@gmail.com',
+                      controller: _emailController),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  CustomTextField(
+                    label: ' Phone number',
+                    hintText: '+233 0000000',
+                    controller: _phoneNumberController,
+                  ),
+                  CustomTextField(
+                    label: 'Username',
+                    hintText: 'janedoe10',
+                    controller: _usernameController,
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    'Date of Birth',
-                    style: GoogleFonts.museoModerno(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
+                  CustomTextField(
+                    hideText: true,
+                    label: 'Password',
+                    hintText: '******',
+                    controller: _passwordController,
                   ),
                   const SizedBox(
                     height: 10,
                   ),
-                  Container(
-                    width: double
-                        .infinity, // Takes up the full width of the screen
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          255, 231, 231, 237), // Grey background color
-                      borderRadius: BorderRadius.circular(
-                          5), // Rounded corners (optional)
-                    ),
-                    child: TextField(
-                      readOnly: true,
-                      onTap: () => _selectDate(context),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16.0),
-                        hintText: 'yy-mm-dd',
-                        hintStyle: TextStyle(
-                            color: Colors.grey[600]), // Placeholder text color
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    'Email',
-                    style: GoogleFonts.museoModerno(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    width: double
-                        .infinity, // Takes up the full width of the screen
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          255, 231, 231, 237), // Grey background color
-                      borderRadius: BorderRadius.circular(
-                          5), // Rounded corners (optional)
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16.0),
-                        hintText: 'jane.doe@gmail.com',
-                        hintStyle: TextStyle(
-                            color: Colors.grey[600]), // Placeholder text color
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    'Password',
-                    style: GoogleFonts.museoModerno(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    width: double
-                        .infinity, // Takes up the full width of the screen
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          255, 231, 231, 237), // Grey background color
-                      borderRadius: BorderRadius.circular(
-                          5), // Rounded corners (optional)
-                    ),
-                    child: TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16.0),
-                        hintText: '********',
-                        hintStyle: TextStyle(
-                            color: Colors.grey[600]), // Placeholder text color
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    'Confirm Password',
-                    style: GoogleFonts.museoModerno(
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    width: double
-                        .infinity, // Takes up the full width of the screen
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(
-                          255, 231, 231, 237), // Grey background color
-                      borderRadius: BorderRadius.circular(
-                          5), // Rounded corners (optional)
-                    ),
-                    child: TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.all(16.0),
-                        hintText: '********',
-                        hintStyle: TextStyle(
-                            color: Colors.grey[600]), // Placeholder text color
-                      ),
-                    ),
+                  CustomTextField(
+                    hideText: true,
+                    label: 'Confirm Password',
+                    hintText: '******',
+                    controller: _confirmPasswordController,
                   ),
                   const SizedBox(
                     height: 20,
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginPage(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor:
-                            const Color.fromARGB(255, 70, 111, 201),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10.0), // Border radius
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 25.0, vertical: 13.0),
-                      ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
+                  CustomButton(
+                    onPressed: _registerUser,
+                    text: 'Sign up',
+                    backgroundColor: const Color.fromARGB(255, 70, 111, 201),
                   ),
                   const SizedBox(
                     height: 10,
@@ -347,9 +302,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ]),
                     ),
                   ),
-                  // const SizedBox(
-                  //   height: 20,
-                  // )
                 ],
               ),
             ),
