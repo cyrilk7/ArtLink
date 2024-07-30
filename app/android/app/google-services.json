@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "114786751346",
+    "project_id": "artlink-56f38",
+    "storage_bucket": "artlink-56f38.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114786751346:android:f12521e1939052674703eb",
+        "android_client_info": {
+          "package_name": "com.example.artlink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpAtjyRA-CcXBm61ADe1i9BcinQIKTIEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114786751346:android:9e919a82f996baa14703eb",
+        "android_client_info": {
+          "package_name": "com.example.ashlink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpAtjyRA-CcXBm61ADe1i9BcinQIKTIEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

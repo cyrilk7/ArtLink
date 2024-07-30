@@ -37,7 +37,7 @@ class ProfileSettings extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Center(child: UserAvatar(userName: user.firstName)),
+          Center(child: UserAvatar(userName: user.firstName, imageUrl: user.profileImage,)),
           const SizedBox(
             height: 10,
           ),

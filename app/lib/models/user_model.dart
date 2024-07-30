@@ -1,29 +1,38 @@
+import 'package:ashlink/models/post_model.dart';
+
 class User {
   final String username;
   final String firstName;
   final String lastName;
-  final String phoneNumber;
-  final String dob;
-  final String email;
-  final String gender;
+  final String? phoneNumber;
+  final String? dob;
+  final String? email;
+  final String? gender;
   final String? password;
   final List<dynamic>? followers;
   final List<dynamic>? following;
-  final List<dynamic>? posts;
+  final List<Post>? posts;
+  bool? isFollowing;
+  final String? profileImage;
+  String? location;
+  final bool? thisUser;
 
-  User({
-    required this.username,
-    required this.firstName,
-    required this.lastName,
-    required this.phoneNumber,
-    required this.dob,
-    required this.email,
-    required this.gender,
-    this.password,
-    this.posts,
-    this.followers,
-    this.following,
-  });
+  User(
+      {required this.username,
+      required this.firstName,
+      required this.lastName,
+      this.phoneNumber,
+      this.dob,
+      this.email,
+      this.gender,
+      this.profileImage,
+      this.password,
+      this.posts,
+      this.followers,
+      this.following,
+      this.isFollowing,
+      this.thisUser,
+      this.location});
 
   // Convert User object to JSON
   Map<String, dynamic> toJson() => {
@@ -39,6 +48,9 @@ class User {
 
   // Convert JSON to User object
   factory User.fromJson(Map<String, dynamic> json) {
+    List<dynamic> postsJson = json['posts'] ?? [];
+    List<Post> posts =
+        postsJson.map((postJson) => Post.fromJson(postJson)).toList();
     return User(
         username: json['username'],
         firstName: json['first_name'],
@@ -47,8 +59,11 @@ class User {
         dob: json['dob'],
         email: json['email'],
         gender: json['gender'],
-        posts: json['posts'] ?? [],
+        posts: posts,
         followers: json['followers'] ?? [],
-        following: json['following'] ?? []);
+        following: json['following'] ?? [],
+        isFollowing: json['isFollowing'] ?? false,
+        thisUser: json['this_user'] ?? false,
+        profileImage: json['profile_image']);
   }
 }

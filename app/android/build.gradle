@@ -1,3 +1,17 @@
+buildscript {
+    ext.kotlin_version = '1.9.0' // Ensure this version matches the Kotlin plugin version you're using
+    repositories {
+        google()
+        mavenCentral() // jcenter() is deprecated
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.0.0' // Update to the latest stable version
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.gms:google-services:4.4.2'
+        // classpath "com.google.gms:google-services:4.4.2" // Uncomment if you need the Google services plugin
+    }
+}
+
 allprojects {
     repositories {
         google()

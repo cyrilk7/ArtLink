@@ -18,7 +18,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final UserController _userController = UserController();
+  // final UserController _userController = UserController();
   String _errorMessage = '';
 
   void _login() async {
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
     String password = _passwordController.text;
 
     try {
-      String token = await _userController.loginUser(username, password);
+      String token = await UserController().loginUser(username, password);
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('access_token', token);
 

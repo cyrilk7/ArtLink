@@ -18,7 +18,6 @@ class _CustomNavBarState extends State<CustomNavBar> {
   List pages = [
     const FeedPage(),
     const DiscoverPage(),
-    const CreatePage(),
     const NotificationsPage(),
     const ProfilePage(),
   ];
@@ -39,7 +38,6 @@ class _CustomNavBarState extends State<CustomNavBar> {
   final List<String> pageTexts = [
     'Home',
     'Discover',
-    'Create',
     'Notifications',
     'Profile'
   ];
@@ -61,10 +59,6 @@ class _CustomNavBarState extends State<CustomNavBar> {
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
               label: 'Discover',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add),
-              label: 'Create',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.notifications_active),

@@ -1,14 +1,65 @@
-import 'package:ashlink/widgets/MESSAGE_card.dart';
+import 'package:ashlink/pages/sub_pages/chat_page.dart';
+import 'package:ashlink/services/chat_service.dart';
 import 'package:ashlink/widgets/custom_icon_button.dart';
 import 'package:ashlink/widgets/story_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class MessagesPage extends StatelessWidget {
+class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
 
   @override
+  State<MessagesPage> createState() => _MessagesPageState();
+}
+
+class _MessagesPageState extends State<MessagesPage> {
+  @override
+  initState() {
+    super.initState();
+
+    // getClientMessages();
+    getChatRoomsForUser("jadeeden");
+  }
+
+  getClientMessages() async {
+    try {
+      var data =
+          await FirebaseFirestore.instance.collection("chat_rooms").get();
+
+      setState(() {
+        print("data ${data.docs}");
+        // _allResults = data.docs;
+      });
+    } catch (e) {
+      print("Error fetching chat rooms: $e");
+    }
+  }
+
+  getChatRoomsForUser(String userId) async {
+    try {
+      // Query chat_rooms where user_ids array contains the specified userId
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection("chat_rooms")
+          .where("user_ids", arrayContains: userId)
+          .get();
+
+      setState(() {
+        // Print the data for debugging purposes
+        var docs = querySnapshot.docs.map((doc) => doc.data()).toList();
+        print("Fetched chat rooms: $docs");
+        // _allResults = querySnapshot.docs;
+      });
+    } catch (e) {
+      print("Error fetching chat rooms: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final _chatService = ChatService();
+    final currentUserId = 'jadeeden'; // Replace with the actual user ID
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 248, 248, 248),
       appBar: AppBar(
@@ -35,7 +86,18 @@ class MessagesPage extends StatelessWidget {
             ),
             CustomIconButton(
               buttonIcon: Icons.edit_note,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChatPage(
+                      receiverUserEmail: 'johndoe7@gmail.com',
+                      receiverUserId: 'johndoe7',
+                      phoneNumber: "0244610091", // Update if needed
+                    ),
+                  ),
+                );
+              },
             )
           ],
         ),
@@ -107,14 +169,12 @@ class MessagesPage extends StatelessWidget {
                 textStyle: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  // fontSize: 22,
                 ),
               ),
             ),
             const SizedBox(
               height: 5,
             ),
-            const MessageCard(),
           ],
         ),
       ),

@@ -1,14 +1,14 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ashlink/controllers/user_controller.dart';
 import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/widgets/custom_alert.dart';
 import 'package:ashlink/widgets/custom_button.dart';
-import 'package:ashlink/widgets/custom_datepicker.dart';
-import 'package:ashlink/widgets/custom_dropdown.dart';
-import 'package:ashlink/widgets/custom_icon_button.dart';
 import 'package:ashlink/widgets/custom_text_field.dart';
+import 'package:ashlink/widgets/custom_icon_button.dart';
 import 'package:ashlink/widgets/user_avatar.dart';
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class EditProfile extends StatefulWidget {
   final User user;
@@ -28,17 +28,35 @@ class _EditProfileState extends State<EditProfile> {
   final TextEditingController _dobController = TextEditingController();
   final userController = UserController();
 
+  File? _profileImage;
+
   @override
   void initState() {
     super.initState();
-
     _usernameController.text = widget.user.username;
     _firstNameController.text = widget.user.firstName;
     _lastNameController.text = widget.user.lastName;
-    _phoneNumberController.text = widget.user.phoneNumber;
-    _emailController.text = widget.user.email;
-    _dobController.text = widget.user.dob;
-    _genderController.text = widget.user.gender;
+    _phoneNumberController.text = widget.user.phoneNumber!;
+    _emailController.text = widget.user.email!;
+    _dobController.text = widget.user.dob!;
+    _genderController.text = widget.user.gender!;
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        _profileImage = File(image.path);
+      });
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      _profileImage = null;
+    });
   }
 
   bool isPhoneNumberValid(String phoneNumber) {
@@ -103,7 +121,8 @@ class _EditProfileState extends State<EditProfile> {
             _firstNameController.text,
             _lastNameController.text,
             _emailController.text,
-            _phoneNumberController.text);
+            _phoneNumberController.text,
+            _profileImage);
 
         Navigator.pop(context, true);
       }
@@ -111,7 +130,7 @@ class _EditProfileState extends State<EditProfile> {
       showDialog(
         context: context,
         builder: (ctx) => CustomAlertDialog(
-            title: 'An error occured',
+            title: 'An error occurred',
             content: e.toString(),
             onConfirm: Navigator.of(ctx).pop),
       );
@@ -136,7 +155,6 @@ class _EditProfileState extends State<EditProfile> {
             textStyle: const TextStyle(
               color: Color.fromARGB(255, 70, 111, 201),
               fontWeight: FontWeight.bold,
-              // fontSize: 22,
             ),
           ),
         ),
@@ -148,85 +166,103 @@ class _EditProfileState extends State<EditProfile> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Center(
-                  child: UserAvatar(userName: widget.user.firstName),
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundImage: _profileImage != null
+                          ? FileImage(_profileImage!)
+                          : widget.user.profileImage != null
+                              ? NetworkImage(widget.user.profileImage!)
+                                  as ImageProvider
+                              : null,
+                      child: _profileImage == null &&
+                              widget.user.profileImage == null
+                          ? const Icon(Icons.person,
+                              size: 50, color: Colors.grey)
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: IconButton(
+                        icon: Icon(
+                          _profileImage != null ||
+                                  widget.user.profileImage != null
+                              ? Icons.remove_circle
+                              : Icons.add_a_photo,
+                          color: Colors.red,
+                        ),
+                        onPressed: () {
+                          if (_profileImage != null ||
+                              widget.user.profileImage != null) {
+                            _removeImage();
+                          } else {
+                            _pickImage();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 TextButton(
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: const Color.fromARGB(255, 70, 111, 201),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(12), // Rounded corners
-                    ), //
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  onPressed: () {},
+                  onPressed: _pickImage,
                   child: const Text('Change Image'),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomTextField(
                   enabled: false,
                   label: 'Username',
                   hintText: 'janedoe10',
                   controller: _usernameController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomTextField(
                   label: 'First name',
                   hintText: 'Jane',
                   controller: _firstNameController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomTextField(
                   label: 'Last name',
                   hintText: 'Doe',
                   controller: _lastNameController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomTextField(
                   enabled: false,
                   label: 'Date of Birth',
                   hintText: 'yyyy-mm-dd',
                   controller: _dobController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomTextField(
                   enabled: false,
                   label: 'Gender',
                   hintText: 'Jane',
                   controller: _genderController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomTextField(
-                    label: 'Email',
-                    hintText: 'jane.doe@gmail.com',
-                    controller: _emailController),
-                const SizedBox(
-                  height: 10,
+                  label: 'Email',
+                  hintText: 'jane.doe@gmail.com',
+                  controller: _emailController,
                 ),
+                const SizedBox(height: 10),
                 CustomTextField(
-                  label: ' Phone number',
+                  label: 'Phone number',
                   hintText: '+233 0000000',
                   controller: _phoneNumberController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomButton(
                   onPressed: _editUser,
                   text: 'Save changes',

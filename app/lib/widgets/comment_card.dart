@@ -1,4 +1,5 @@
 import 'package:ashlink/controllers/post_controller.dart';
+import 'package:ashlink/models/comment_model.dart';
 import 'package:ashlink/models/post_model.dart';
 import 'package:ashlink/pages/main_pages/profile_page.dart';
 import 'package:ashlink/pages/sub_pages/comment_page.dart';
@@ -6,16 +7,15 @@ import 'package:ashlink/pages/sub_pages/likes_page.dart';
 import 'package:ashlink/widgets/custom_avatar.dart';
 import 'package:flutter/material.dart';
 
-class PostCard extends StatefulWidget {
-  final Post post;
-  final bool? commentPost;
-  const PostCard({super.key, required this.post, this.commentPost = false});
+class CommentCard extends StatefulWidget {
+  final Comment comment;
+  const CommentCard({super.key, required this.comment});
 
   @override
   _PostCardState createState() => _PostCardState();
 }
 
-class _PostCardState extends State<PostCard>
+class _PostCardState extends State<CommentCard>
     with SingleTickerProviderStateMixin {
   bool isLiked = false;
   late AnimationController _animationController;
@@ -39,8 +39,9 @@ class _PostCardState extends State<PostCard>
         curve: Curves.easeInOut, // Smooth curve
       ),
     );
-    isLiked = widget.post.isLiked;
-    likeCount = widget.post.numLikes!;
+    // print(widget.post.isLiked);
+    isLiked = widget.comment.isLiked;
+    likeCount = widget.comment.numLikes!;
   }
 
   @override
@@ -49,16 +50,16 @@ class _PostCardState extends State<PostCard>
     super.dispose();
   }
 
-  Future<void> toggleLike(String postId) async {
+  Future<void> toggleLike(String commentId) async {
     final count;
     try {
       if (isLiked) {
-        count = await postController.unlikePost(postId);
+        count = await postController.unlikeComment(commentId);
         _animationController
             .forward()
             .then((_) => _animationController.reverse());
       } else {
-        count = await postController.likePost(postId);
+        count = await postController.likeComment(commentId);
       }
       setState(() {
         isLiked = !isLiked;
@@ -73,19 +74,16 @@ class _PostCardState extends State<PostCard>
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        border: !widget.commentPost!
-            ? const Border(
-                bottom: BorderSide(
-                  color: Colors.grey, // Border color
-                  width: 1, // Border width
-                ),
-              )
-            : null,
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey, // Border color
+            width: 1, // Border width
+          ),
+        ),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-            vertical: widget.commentPost! ? 0 : 12.0, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -95,15 +93,15 @@ class _PostCardState extends State<PostCard>
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProfilePage(
-                      username: widget.post.username,
-                      thisUser: widget.post.thisUser,
+                      username: widget.comment.username,
+                      thisUser: widget.comment.thisUser,
                     ),
                   ),
                 );
               },
               child: CustomAvatar(
-                firstName: widget.post.firstName,
-                imageUrl: widget.post.profileImage,
+                firstName: widget.comment.firstName,
+                imageUrl: widget.comment.profileImage,
               ),
             ),
             const SizedBox(width: 10),
@@ -118,14 +116,14 @@ class _PostCardState extends State<PostCard>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${widget.post.firstName} ${widget.post.lastName}',
+                            '${widget.comment.firstName} ${widget.comment.lastName}',
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            '@${widget.post.username}',
+                            '@${widget.comment.username}',
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w400,
@@ -137,24 +135,25 @@ class _PostCardState extends State<PostCard>
                     ],
                   ),
                   const SizedBox(height: 5),
-                  Text(widget.post.content),
+                  Text(widget.comment.message),
                   const SizedBox(
                     height: 5,
                   ),
-                  widget.post.imageUrl!.isNotEmpty
+                  widget.comment.imageUrl!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.network(
-                            widget.post.imageUrl!,
+                            widget.comment.imageUrl!,
                             fit: BoxFit.cover,
                           ),
                         )
                       : const SizedBox(),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
                         onTap: () {
-                          toggleLike(widget.post.postId);
+                          toggleLike(widget.comment.commentId);
                         },
                         child: AnimatedBuilder(
                           animation: _scaleAnimation,
@@ -176,44 +175,16 @@ class _PostCardState extends State<PostCard>
                       ),
                       GestureDetector(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LikesPage(
-                                  postId: widget.post.postId,
-                                ),
-                              ),
-                            );
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (context) => LikesPage(
+                            //       postId: widget.comment.postId,
+                            //     ),
+                            //   ),
+                            // );
                           },
                           child: Text('${likeCount.toString()} likes')),
-                      const SizedBox(width: 10),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  CommentPage(postId: widget.post.postId),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.comment_outlined),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          widget.commentPost != null && !widget.commentPost!
-                              ? Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        CommentPage(postId: widget.post.postId),
-                                  ),
-                                )
-                              : null;
-                        },
-                        child: Text(
-                            '${widget.post.numComments.toString()} comments'),
-                      ),
                     ],
                   ),
                 ],

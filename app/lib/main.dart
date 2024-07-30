@@ -1,8 +1,23 @@
+import 'package:ashlink/firebase_options.dart';
 import 'package:ashlink/pages/sub_pages/landing_page.dart';
+import 'package:ashlink/services/chat_service.dart';
+import 'package:ashlink/services/firebase_api.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  // await FirebaseApi().initNotifications();
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ChatService(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -17,5 +32,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
