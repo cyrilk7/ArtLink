@@ -1,14 +1,12 @@
 import 'package:ashlink/controllers/post_controller.dart';
 import 'package:ashlink/models/post_model.dart';
-import 'package:ashlink/pages/main_pages/create_page.dart';
 import 'package:ashlink/pages/sub_pages/create_post.dart';
 import 'package:ashlink/pages/sub_pages/messages.dart';
-import 'package:ashlink/widgets/add_story.dart';
 import 'package:ashlink/widgets/custom_icon_button.dart';
 import 'package:ashlink/widgets/post_card.dart';
-import 'package:ashlink/widgets/story_card.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tuple/tuple.dart';
 
 class FeedPage extends StatefulWidget {
   const FeedPage({super.key});
@@ -21,6 +19,8 @@ class _FeedPageState extends State<FeedPage> {
   late String selectedOption;
   late Future<List<Post>> postsFuture;
   final _postController = PostController();
+  late String email;
+  late String username;
 
   void updateSelectedOption(String option) {
     setState(() {
@@ -36,12 +36,21 @@ class _FeedPageState extends State<FeedPage> {
     postsFuture = fetchPosts();
   }
 
-  Future<List<Post>> fetchPosts() {
+  Future<List<Post>> fetchPosts() async {
+    Tuple3<List<Post>, String, String> result;
     if (selectedOption == 'All') {
-      return _postController.getAllPosts();
+      result = await _postController.getAllPosts();
     } else {
-      return _postController.getFollowingPosts();
+      result = await _postController.getFollowingPosts();
     }
+
+    // Set email and username
+    setState(() {
+      email = result.item2;
+      username = result.item3;
+    });
+
+    return result.item1;
   }
 
   @override
@@ -67,7 +76,12 @@ class _FeedPageState extends State<FeedPage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MessagesPage()),
+                  MaterialPageRoute(
+                    builder: (context) => MessagesPage(
+                      username: username,
+                      email: email,
+                    ),
+                  ),
                 );
               },
             )

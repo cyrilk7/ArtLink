@@ -6,15 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ChatPage extends StatefulWidget {
+  final String senderId;
+  final String senderEmail;
   final String receiverUserEmail;
   final String receiverUserId;
   final String phoneNumber;
+  final String receiverName;
 
-  const ChatPage(
-      {super.key,
-      required this.receiverUserEmail,
-      required this.receiverUserId,
-      required this.phoneNumber});
+  const ChatPage({
+    super.key,
+    required this.senderId,
+    required this.senderEmail,
+    required this.receiverUserEmail,
+    required this.receiverUserId,
+    required this.phoneNumber,
+    required this.receiverName,
+  });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -22,7 +29,17 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
-  final _chatService = ChatService();
+  late ChatService _chatService;
+  bool messageSent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatService = ChatService(
+      senderId: widget.senderId,
+      senderEmail: widget.senderEmail,
+    );
+  }
 
   void sendMessage() async {
     if (_messageController.text.isNotEmpty) {
@@ -30,6 +47,7 @@ class _ChatPageState extends State<ChatPage> {
           widget.receiverUserId, _messageController.text);
 
       _messageController.clear();
+      messageSent = true;
     }
   }
 
@@ -64,21 +82,25 @@ class _ChatPageState extends State<ChatPage> {
                 CustomIconButton(
                   buttonIcon: Icons.arrow_back,
                   onPressed: () {
-                    Navigator.pop(context);
+                    if (messageSent) {
+                      Navigator.pop(context, true);
+                    } else {
+                      Navigator.pop(context);
+                    }
                   },
                 ),
-                const Expanded(
+                Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 20, // Replace with your image
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'John Doe',
-                        style: TextStyle(
+                        widget.receiverName,
+                        style: const TextStyle(
                           fontSize: 14,
                         ),
                         overflow: TextOverflow.ellipsis, // Handle overflow
@@ -112,7 +134,8 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildMessageList() {
     return StreamBuilder(
-        stream: _chatService.getMessages(widget.receiverUserId, "jadeeden"),
+        stream:
+            _chatService.getMessages(widget.receiverUserId, widget.senderId),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Text('Error${snapshot.error}');
@@ -132,14 +155,14 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildMessageItem(DocumentSnapshot document) {
     Map<String, dynamic> data = document.data() as Map<String, dynamic>;
 
-    var alignment = (data['senderId'] == 'jadeeden'
+    var alignment = (data['senderId'] == widget.senderId
         ? Alignment.centerRight
         : Alignment.centerLeft);
 
     var textColor =
-        (data['senderId'] == 'jadeeden' ? Colors.white : Colors.black);
+        (data['senderId'] == widget.senderId ? Colors.white : Colors.black);
 
-    var bubbleColor = (data['senderId'] == 'jadeeden'
+    var bubbleColor = (data['senderId'] == widget.senderId
         ? const Color.fromARGB(255, 70, 111, 201)
         : const Color.fromARGB(255, 231, 231, 237));
 
@@ -148,7 +171,7 @@ class _ChatPageState extends State<ChatPage> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          crossAxisAlignment: (data['senderId'] == 'jadeeden')
+          crossAxisAlignment: (data['senderId'] == widget.senderId)
               ? CrossAxisAlignment.end
               : CrossAxisAlignment.start,
           children: [

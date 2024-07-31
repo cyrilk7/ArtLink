@@ -13,10 +13,7 @@ void main() async {
   );
   // await FirebaseApi().initNotifications();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ChatService(),
-      child: const MyApp(),
-    ),
+    const MyApp(),
   );
 }
 

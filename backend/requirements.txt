@@ -3,3 +3,4 @@ firebase_admin
 werkzeug
 Flask-JWT-Extended
 python-dotenv
+functions-framework==3.*

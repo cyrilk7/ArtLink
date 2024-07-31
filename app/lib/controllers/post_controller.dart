@@ -5,6 +5,7 @@ import 'package:ashlink/models/post_model.dart';
 import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tuple/tuple.dart';
 
 class PostController {
   final ApiService _apiService = ApiService();
@@ -67,31 +68,50 @@ class PostController {
     }
   }
 
-  Future<List<Post>> getAllPosts() async {
-    final response = await _apiService.get('posts', token: _token);
+Future<Tuple3<List<Post>, String, String>> getAllPosts() async {
+  final response = await _apiService.get('posts', token: _token);
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = jsonDecode(response.body);
-      List<Post> posts = jsonData.map((data) => Post.fromJson(data)).toList();
-      return posts;
-    } else {
-      throw Exception(
-          'Failed to load user. Status code: ${response.statusCode}');
-    }
+  if (response.statusCode == 200) {
+    // Decode the JSON response
+    Map<String, dynamic> jsonData = jsonDecode(response.body);
+
+    // Access the "posts" list from the JSON data
+    List<dynamic> postsJson = jsonData["posts"];
+
+    // Convert the list of dynamic to list of Post objects
+    List<Post> posts = postsJson.map((data) => Post.fromJson(data)).toList();
+
+    String email = jsonData["email"];
+    String username = jsonData["username"];
+
+    return Tuple3(posts, email, username);
+  } else {
+    throw Exception('Failed to load posts. Status code: ${response.statusCode}');
   }
+}
 
-  Future<List<Post>> getFollowingPosts() async {
-    final response = await _apiService.get('posts/following', token: _token);
 
-    if (response.statusCode == 200) {
-      List<dynamic> jsonData = jsonDecode(response.body);
-      List<Post> posts = jsonData.map((data) => Post.fromJson(data)).toList();
-      return posts;
-    } else {
-      throw Exception(
-          'Failed to load user. Status code: ${response.statusCode}');
-    }
+
+
+Future<Tuple3<List<Post>, String, String>> getFollowingPosts() async {
+  final response = await _apiService.get('posts/following', token: _token);
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> jsonData = jsonDecode(response.body);
+    List<dynamic> postsJson = jsonData["posts"];
+    List<Post> posts =
+        postsJson.map((data) => Post.fromJson(data)).toList();
+
+    String email = jsonData["email"];
+    String username = jsonData["username"];
+
+    return Tuple3(posts, email, username);
+  } else {
+    throw Exception(
+        'Failed to load posts. Status code: ${response.statusCode}');
   }
+}
+
 
   Future<List<User>> getPostLikes(String postId) async {
     final response =
@@ -114,8 +134,7 @@ class PostController {
       Map<String, dynamic> jsonData = jsonDecode(response.body);
       Post post = Post.fromJson(jsonData);
       return post;
-    } 
-    else {
+    } else {
       throw Exception(
           'Failed to load post. Status code: ${response.statusCode}');
     }
