@@ -5,6 +5,7 @@ import 'package:ashlink/pages/sub_pages/comment_page.dart';
 import 'package:ashlink/pages/sub_pages/likes_page.dart';
 import 'package:ashlink/widgets/custom_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -68,6 +69,29 @@ class _PostCardState extends State<PostCard>
       // Handle error if necessary
       print('Error toggling follow status: $e');
     }
+  }
+
+  void openSMSAppWithMessage(String message) async {
+    final Uri smsUri = Uri(
+      scheme: 'sms',
+      path: '', // Leave path empty to not pre-fill any number
+      queryParameters: <String, String>{'body': message},
+    );
+
+    // Check if the URL can be launched
+    if (await canLaunchUrl(smsUri)) {
+      // Launch the URL
+      await launchUrl(smsUri);
+    } else {
+      throw 'Could not launch SMS app';
+    }
+  }
+
+  void _shareRecipe(String postId) {
+    String message =
+        "Hey there! Checkout this post!\nhttps://europe-west2-level-ward-430511-k2.cloudfunctions.net/artlink-function-1/share_post/$postId";
+
+    openSMSAppWithMessage(message);
   }
 
   @override
@@ -214,6 +238,12 @@ class _PostCardState extends State<PostCard>
                         child: Text(
                             '${widget.post.numComments.toString()} comments'),
                       ),
+                      IconButton(
+                        onPressed: () {
+                          _shareRecipe(widget.post.postId);
+                        },
+                        icon: const Icon(Icons.share),
+                      )
                     ],
                   ),
                 ],

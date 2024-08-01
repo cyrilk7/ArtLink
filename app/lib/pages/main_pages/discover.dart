@@ -1,6 +1,7 @@
 import 'package:ashlink/pages/main_pages/profile_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
@@ -14,13 +15,14 @@ class _DiscoverPageState extends State<DiscoverPage> {
   late String selectedOption;
   List _allResults = [];
   List _resultList = [];
+  late String currentUser;
 
   @override
   initState() {
     super.initState();
     selectedOption = 'Users';
     _controller.addListener(_onSearchChanged);
-    getClientStream();
+    getCurrentUser();
   }
 
   @override
@@ -32,7 +34,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
   @override
   void didChangeDependencies() {
-    getClientStream();
     super.didChangeDependencies();
   }
 
@@ -40,18 +41,21 @@ class _DiscoverPageState extends State<DiscoverPage> {
     searchResultList();
   }
 
-  searchResultList() {
+  searchResultList() async {
     var showResult = [];
     if (_controller.text != "") {
       for (var clientSnapshot in _allResults) {
         var name = clientSnapshot['username'].toString().toLowerCase();
+        print(currentUser);
 
-        if (name.contains(_controller.text.toLowerCase())) {
+        if (name.contains(_controller.text.toLowerCase()) &&
+            name != currentUser) {
           showResult.add(clientSnapshot);
         }
       }
     } else {
-      showResult = List.from(_allResults);
+      showResult = List.from(
+          _allResults.where((client) => client['username'] != currentUser));
     }
     setState(() {
       _resultList = showResult;
@@ -71,10 +75,17 @@ class _DiscoverPageState extends State<DiscoverPage> {
     searchResultList();
   }
 
+  Future<void> getCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentUser = prefs.getString('username') ?? '';
+    });
+    getClientStream();
+  }
+
   void updateSelectedOption(String option) {
     setState(() {
       selectedOption = option;
-      // postsFuture = fetchPosts();
     });
   }
 
@@ -99,8 +110,6 @@ class _DiscoverPageState extends State<DiscoverPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     buildOption('Users'),
-                    buildOption('Events'),
-                    // buildOption('Option 3'),
                   ],
                 ),
                 Container(

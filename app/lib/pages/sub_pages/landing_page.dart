@@ -6,8 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,12 +30,6 @@ class LandingPage extends StatelessWidget {
           children: [
             Center(
               child: SizedBox(
-                //   decoration: BoxDecoration(
-                //   border: Border.all(
-                //     color: Colors.blueGrey, // Optional border color
-                //     width: 2.0, // Optional border width
-                //   ),
-                // ),
                 width: MediaQuery.of(context).size.width * 0.7,
                 height: MediaQuery.of(context).size.height * 0.45,
                 child: Image.asset("assets/icons/svg-icon.png"),

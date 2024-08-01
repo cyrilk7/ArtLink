@@ -37,6 +37,7 @@ class _FeedPageState extends State<FeedPage> {
   }
 
   Future<List<Post>> fetchPosts() async {
+    await _postController.initializeToken();
     Tuple3<List<Post>, String, String> result;
     if (selectedOption == 'All') {
       result = await _postController.getAllPosts();

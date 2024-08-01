@@ -1,5 +1,8 @@
 import 'package:ashlink/controllers/user_controller.dart';
 import 'package:ashlink/models/user_model.dart';
+import 'package:ashlink/pages/sub_pages/chat_page.dart';
+import 'package:ashlink/pages/sub_pages/followers.dart';
+import 'package:ashlink/pages/sub_pages/following_page.dart';
 import 'package:ashlink/pages/sub_pages/profile_settings.dart';
 import 'package:ashlink/widgets/custom_button.dart';
 import 'package:ashlink/widgets/custom_icon_button.dart';
@@ -10,7 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geocoding/geocoding.dart'; // Import the geocoding package
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart'; // Import the geolocator package
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import the geolocator package
 
 class LocationPermissionHandler {
   Future<void> requestLocationPermission() async {
@@ -53,13 +57,25 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isFollowing = false;
   bool isInitialLoad = true;
   UserController userController = UserController();
-  String _city = 'Unknown'; // Variable to store the city
-  final LocationPermissionHandler _permissionHandler =
-      LocationPermissionHandler();
+  String? currentUsername;
+  String? currentUserEmail;
 
   @override
   void initState() {
     super.initState();
+    if (!widget.thisUser) {
+      getCurrentUser();
+    } else {
+      userProfileFuture = _fetchUserProfile();
+    }
+  }
+
+  Future<void> getCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentUsername = prefs.getString('username') ?? '';
+      currentUserEmail = prefs.getString('email') ?? '';
+    });
     userProfileFuture = _fetchUserProfile();
   }
 
@@ -71,30 +87,10 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       user = await userController.getUserProfile();
     }
-
-    await _permissionHandler.requestLocationPermission();
-    // Fetch the city based on current location
-    await _fetchCity();
     setState(() {
       isFollowing = user.isFollowing ?? false;
     });
     return user;
-  }
-
-  Future<void> _fetchCity() async {
-    try {
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
-      if (placemarks.isNotEmpty) {
-        setState(() {
-          _city = placemarks.first.locality ?? 'Unknown';
-        });
-      }
-    } catch (e) {
-      print('Error fetching city: $e');
-    }
   }
 
   Future<void> toggleFollow(String username) async {
@@ -202,13 +198,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.location_pin,
-                            color: const Color.fromARGB(255, 70, 111, 201),
+                            color: Color.fromARGB(255, 70, 111, 201),
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            _city, // Display the city here
+                            user.location!, // Display the city here
                             style: const TextStyle(fontSize: 16),
                           ),
                         ],
@@ -223,12 +219,34 @@ class _ProfilePageState extends State<ProfilePage> {
                           ProfileStat(
                               count: user.posts!.length.toString(),
                               label: 'Posts'),
-                          ProfileStat(
-                              count: user.followers!.length.toString(),
-                              label: 'Followers'),
-                          ProfileStat(
-                              count: user.following!.length.toString(),
-                              label: 'Following'),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      FollowersPage(username: user.username),
+                                ),
+                              );
+                            },
+                            child: ProfileStat(
+                                count: user.followers!.length.toString(),
+                                label: 'Followers'),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      FollowingPage(username: user.username),
+                                ),
+                              );
+                            },
+                            child: ProfileStat(
+                                count: user.following!.length.toString(),
+                                label: 'Following'),
+                          ),
                         ],
                       ),
                     ),
@@ -259,7 +277,27 @@ class _ProfilePageState extends State<ProfilePage> {
                                 width: 5,
                               ),
                               CustomButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  currentUserEmail != null &&
+                                          currentUsername != null
+                                      ? Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ChatPage(
+                                              senderId: currentUsername!,
+                                              senderEmail: currentUserEmail!,
+                                              receiverUserEmail: user.email ??
+                                                  'example@example.com',
+                                              receiverUserId: user.username,
+                                              phoneNumber:
+                                                  user.phoneNumber ?? "",
+                                              receiverName:
+                                                  "${user.firstName} ${user.lastName}",
+                                            ),
+                                          ),
+                                        )
+                                      : null;
+                                },
                                 text: 'Message',
                                 width: 160,
                                 borderColor: Colors.black,

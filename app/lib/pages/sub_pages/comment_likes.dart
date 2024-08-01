@@ -9,16 +9,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LikesPage extends StatefulWidget {
-  final String postId;
+class CommentLikesPage extends StatefulWidget {
+  final String commentId;
 
-  const LikesPage({super.key, required this.postId});
+  const CommentLikesPage({super.key, required this.commentId});
 
   @override
-  State<LikesPage> createState() => _LikesPageState();
+  State<CommentLikesPage> createState() => _CommentLikesPageState();
 }
 
-class _LikesPageState extends State<LikesPage> {
+class _CommentLikesPageState extends State<CommentLikesPage> {
   late Future<List<User>> likesFuture;
   final postController = PostController();
   final userController = UserController();
@@ -26,8 +26,7 @@ class _LikesPageState extends State<LikesPage> {
   @override
   void initState() {
     super.initState();
-    likesFuture = postController.getPostLikes(widget.postId);
-    print('init');
+    likesFuture = postController.getCommentLikes(widget.commentId);
   }
 
   Future<void> followUser(User user) async {
@@ -114,7 +113,7 @@ class _LikesPageState extends State<LikesPage> {
                           ).then((_) {
                             setState(() {
                               likesFuture =
-                                  postController.getPostLikes(widget.postId);
+                                  postController.getCommentLikes(widget.commentId);
                             });
                           });
 

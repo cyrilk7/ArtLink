@@ -5,6 +5,7 @@ import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/services/api_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tuple/tuple.dart';
 
 class UserController {
   static final UserController _instance = UserController._internal();
@@ -39,7 +40,8 @@ class UserController {
     }
   }
 
-  Future<String> loginUser(String username, String password) async {
+  Future<Tuple3<String, String, String>> loginUser(
+      String username, String password) async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
     try {
       final response = await _apiService.post('login', {
@@ -51,7 +53,7 @@ class UserController {
       if (response.statusCode == 200) {
         var result = jsonDecode(response.body);
         if (result['success']) {
-          return result['access_token'];
+          return Tuple3(result['access_token'], result['username'], result["email"]);
         } else {
           throw Exception(result['message']);
         }
@@ -91,22 +93,51 @@ class UserController {
     }
   }
 
+
+  Future<List<User>> getUserFollowing(String username) async {
+    final response =
+        await _apiService.get('following/$username', token: _token);
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = jsonDecode(response.body);
+      List<User> users = jsonData.map((data) => User.fromJson(data)).toList();
+      return users;
+    } else {
+      throw Exception(
+          'Failed to load users. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<List<User>> getUserFollowers(String username) async {
+    final response =
+        await _apiService.get('followers/$username', token: _token);
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = jsonDecode(response.body);
+      List<User> users = jsonData.map((data) => User.fromJson(data)).toList();
+      return users;
+    } else {
+      throw Exception(
+          'Failed to load users. Status code: ${response.statusCode}');
+    }
+  }
+  
   Future<void> editUser(String firstName, String lastName, String email,
       String phoneNumber, File? profileImage) async {
     try {
       final response = await _apiService.putImg(
-      '/edit_profile', 
-      body: {
-            'first_name': firstName,
-            'last_name': lastName,
-            'email': email,
-            'phone_number': phoneNumber,
-          },
-      file: profileImage,
-      token: _token,
-      requiresAuth: true, // Specify that this request requires authentication
-    );
-    if (!(response.statusCode == 200)) {
+        '/edit_profile',
+        body: {
+          'first_name': firstName,
+          'last_name': lastName,
+          'email': email,
+          'phone_number': phoneNumber,
+        },
+        file: profileImage,
+        token: _token,
+        requiresAuth: true, // Specify that this request requires authentication
+      );
+      if (!(response.statusCode == 200)) {
         var result = jsonDecode(response.body);
         throw Exception(result['message']);
       }
@@ -114,7 +145,6 @@ class UserController {
       throw Exception(e);
     }
   }
-
 
   Future<void> followUser(String username) async {
     final response = await _apiService.post(
@@ -127,11 +157,9 @@ class UserController {
     if (!result["success"]) {
       throw Exception(result["message"]);
     }
-
   }
 
   Future<void> unfollowUser(String username) async {
-    // try {
     final response = await _apiService.post(
       'unfollow_user',
       {'username': username},

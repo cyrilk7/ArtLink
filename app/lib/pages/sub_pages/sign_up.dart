@@ -36,10 +36,13 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
 
   bool isPhoneNumberValid(String phoneNumber) {
-    final RegExp phoneRegExp = RegExp(r'^\+?[1-9]\d{1,14}$');
-    return phoneRegExp.hasMatch(phoneNumber);
+    final RegExp numberRegExp = RegExp(
+      r'^\d+$', // Matches only positive integers
+    );
+    return numberRegExp.hasMatch(phoneNumber);
   }
 
   bool isEmailValid(String email) {
@@ -54,6 +57,7 @@ class _SignUpPageState extends State<SignUpPage> {
         _firstNameController.text.isNotEmpty &&
         _lastNameController.text.isNotEmpty &&
         _phoneNumberController.text.isNotEmpty &&
+        _locationController.text.isNotEmpty &&
         _emailController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty &&
         _confirmPasswordController.text.isNotEmpty &&
@@ -121,6 +125,7 @@ class _SignUpPageState extends State<SignUpPage> {
           dob: DateFormat('yyyy-MM-dd').format(selectedDate!),
           email: _emailController.text,
           gender: _gender!,
+          location: _locationController.text,
           password: _passwordController.text,
         );
 
@@ -141,7 +146,6 @@ class _SignUpPageState extends State<SignUpPage> {
             content: e.toString(),
             onConfirm: Navigator.of(ctx).pop),
       );
-      
     }
   }
 
@@ -240,6 +244,17 @@ class _SignUpPageState extends State<SignUpPage> {
                     label: ' Phone number',
                     hintText: '+233 0000000',
                     controller: _phoneNumberController,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  CustomTextField(
+                    label: 'Location',
+                    hintText: 'Accra',
+                    controller: _locationController,
+                  ),
+                  const SizedBox(
+                    height: 10,
                   ),
                   CustomTextField(
                     label: 'Username',

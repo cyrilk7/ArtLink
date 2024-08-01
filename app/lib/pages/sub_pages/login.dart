@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tuple/tuple.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,13 +25,15 @@ class _LoginPageState extends State<LoginPage> {
   void _login() async {
     String username = _usernameController.text;
     String password = _passwordController.text;
+    Tuple3<String, String, String> result;
 
     try {
-      String token = await UserController().loginUser(username, password);
+      result = await UserController().loginUser(username, password);
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', token);
+      await prefs.setString('access_token', result.item1);
+      await prefs.setString('username', result.item2);
+      await prefs.setString('email', result.item3);
 
-      // print('Login successful: $token');
 
       Navigator.pop(context);
       Navigator.pushReplacement(

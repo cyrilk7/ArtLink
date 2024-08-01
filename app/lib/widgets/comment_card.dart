@@ -2,6 +2,7 @@ import 'package:ashlink/controllers/post_controller.dart';
 import 'package:ashlink/models/comment_model.dart';
 import 'package:ashlink/models/post_model.dart';
 import 'package:ashlink/pages/main_pages/profile_page.dart';
+import 'package:ashlink/pages/sub_pages/comment_likes.dart';
 import 'package:ashlink/pages/sub_pages/comment_page.dart';
 import 'package:ashlink/pages/sub_pages/likes_page.dart';
 import 'package:ashlink/widgets/custom_avatar.dart';
@@ -175,14 +176,14 @@ class _PostCardState extends State<CommentCard>
                       ),
                       GestureDetector(
                           onTap: () {
-                            // Navigator.push(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => LikesPage(
-                            //       postId: widget.comment.postId,
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CommentLikesPage(
+                                  commentId: widget.comment.commentId,
+                                ),
+                              ),
+                            );
                           },
                           child: Text('${likeCount.toString()} likes')),
                     ],

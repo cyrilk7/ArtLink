@@ -1,46 +1,30 @@
-import 'dart:convert';
-import 'package:ashlink/controllers/post_controller.dart';
+
 import 'package:ashlink/controllers/user_controller.dart';
 import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/pages/main_pages/profile_page.dart';
-import 'package:ashlink/widgets/custom_avatar.dart';
 import 'package:ashlink/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class LikesPage extends StatefulWidget {
-  final String postId;
+class FollowersPage extends StatefulWidget {
+  final String username;
 
-  const LikesPage({super.key, required this.postId});
+  const FollowersPage({super.key, required this.username});
 
   @override
-  State<LikesPage> createState() => _LikesPageState();
+  State<FollowersPage> createState() => _FollowersPageState();
 }
 
-class _LikesPageState extends State<LikesPage> {
-  late Future<List<User>> likesFuture;
-  final postController = PostController();
+class _FollowersPageState extends State<FollowersPage> {
+  late Future<List<User>> followersFuture;
+  // final postController = PostController();
   final userController = UserController();
-  bool isRefeshed = false;
+  // bool isRefeshed = false;
+
   @override
   void initState() {
     super.initState();
-    likesFuture = postController.getPostLikes(widget.postId);
-    print('init');
-  }
-
-  Future<void> followUser(User user) async {
-    try {
-      await userController.followUser(user.username);
-
-      setState(() {
-        user.isFollowing = true;
-      });
-    } catch (e) {
-      // Handle error
-      print('Error toggling follow status: $e');
-    }
+    followersFuture = userController.getUserFollowers(widget.username);
   }
 
   @override
@@ -82,7 +66,7 @@ class _LikesPageState extends State<LikesPage> {
           const SizedBox(height: 16),
           Expanded(
             child: FutureBuilder<List<User>>(
-              future: likesFuture,
+              future: followersFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -92,7 +76,7 @@ class _LikesPageState extends State<LikesPage> {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(
-                    child: Text('No likes yet.'),
+                    child: Text('No followers yet.'),
                   );
                 } else {
                   List<User> userList = snapshot.data!;
@@ -113,12 +97,12 @@ class _LikesPageState extends State<LikesPage> {
                             ),
                           ).then((_) {
                             setState(() {
-                              likesFuture =
-                                  postController.getPostLikes(widget.postId);
+                              followersFuture =
+                                  userController.getUserFollowers(widget.username);
                             });
                           });
 
-                          // .then((_)=>setState(()=>{}));
+                          
                         },
                         child: ListTile(
                           leading: CircleAvatar(
@@ -140,11 +124,11 @@ class _LikesPageState extends State<LikesPage> {
                                   paddingHorizontal: 0,
                                   paddingVertical: 5,
                                   onPressed: () {
-                                    if (!user.isFollowing!) {
-                                      followUser(user);
-                                    } else {
-                                      print("Already following");
-                                    }
+                                    // if (!user.isFollowing!) {
+                                    //   followUser(user);
+                                    // } else {
+                                    //   print("Already following");
+                                    // }
                                   },
                                   text: user.isFollowing!
                                       ? 'Following'

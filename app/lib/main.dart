@@ -1,5 +1,6 @@
 import 'package:ashlink/firebase_options.dart';
 import 'package:ashlink/pages/sub_pages/landing_page.dart';
+import 'package:ashlink/pages/sub_pages/splash_screen.dart';
 import 'package:ashlink/services/chat_service.dart';
 import 'package:ashlink/services/firebase_api.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -23,9 +24,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LandingPage(),
+      home: SplashScreen(),
     );
   }
 }

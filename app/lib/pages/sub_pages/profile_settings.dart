@@ -1,16 +1,30 @@
 import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/pages/sub_pages/edit_profile.dart';
+import 'package:ashlink/pages/sub_pages/landing_page.dart';
 import 'package:ashlink/widgets/custom_button.dart';
 import 'package:ashlink/widgets/custom_icon_button.dart';
 import 'package:ashlink/widgets/setting_option.dart';
 import 'package:ashlink/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileSettings extends StatelessWidget {
   final User user;
 
   const ProfileSettings({super.key, required this.user});
+
+  Future<void> _logout(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('access_token');
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => LandingPage()),
+      (Route<dynamic> route) =>
+          false, // This callback removes all previous routes
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +51,11 @@ class ProfileSettings extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Center(child: UserAvatar(userName: user.firstName, imageUrl: user.profileImage,)),
+          Center(
+              child: UserAvatar(
+            userName: user.firstName,
+            imageUrl: user.profileImage,
+          )),
           const SizedBox(
             height: 10,
           ),
@@ -84,7 +102,9 @@ class ProfileSettings extends StatelessWidget {
           ),
           SettingOption(
             text: 'Log out',
-            onTap: () {},
+            onTap: () {
+              _logout(context);
+            },
           ),
           const SizedBox(
             height: 25,

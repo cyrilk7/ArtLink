@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ashlink/models/notification_model.dart';
 import 'package:ashlink/models/post_model.dart';
 import 'package:ashlink/models/user_model.dart';
 import 'package:ashlink/services/api_service.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tuple/tuple.dart';
 
@@ -17,10 +19,10 @@ class PostController {
   }
 
   PostController._internal() {
-    _initializeToken();
+    initializeToken();
   }
 
-  Future<void> _initializeToken() async {
+  Future<void> initializeToken() async {
     _token = await _getToken();
   }
 
@@ -121,6 +123,34 @@ Future<Tuple3<List<Post>, String, String>> getFollowingPosts() async {
       List<dynamic> jsonData = jsonDecode(response.body);
       List<User> users = jsonData.map((data) => User.fromJson(data)).toList();
       return users;
+    } else {
+      throw Exception(
+          'Failed to load likes. Status code: ${response.statusCode}');
+    }
+  }
+
+    Future<List<User>> getCommentLikes(String commentId) async {
+    final response =
+        await _apiService.get('comments/likes/$commentId', token: _token);
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = jsonDecode(response.body);
+      List<User> users = jsonData.map((data) => User.fromJson(data)).toList();
+      return users;
+    } else {
+      throw Exception(
+          'Failed to load likes. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<List<Notifications>> getNotifications() async {
+    final response =
+        await _apiService.get('notifications', token: _token);
+
+    if (response.statusCode == 200) {
+      List<dynamic> jsonData = jsonDecode(response.body);
+      List<Notifications> notifications = jsonData.map((data) => Notifications.fromJson(data)).toList();
+      return notifications;
     } else {
       throw Exception(
           'Failed to load likes. Status code: ${response.statusCode}');

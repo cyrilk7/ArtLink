@@ -43,6 +43,7 @@ class User {
         'dob': dob,
         'email': email,
         'gender': gender,
+        'location': location,
         'password': password,
       };
 
@@ -56,6 +57,7 @@ class User {
         firstName: json['first_name'],
         lastName: json['last_name'],
         phoneNumber: json['phone_number'],
+        location: json['location'],
         dob: json['dob'],
         email: json['email'],
         gender: json['gender'],
