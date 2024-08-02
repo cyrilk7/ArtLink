@@ -60,8 +60,10 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   bool isPhoneNumberValid(String phoneNumber) {
-    final RegExp phoneRegExp = RegExp(r'^\+?[1-9]\d{1,14}$');
-    return phoneRegExp.hasMatch(phoneNumber);
+    final RegExp numberRegExp = RegExp(
+      r'^\d+$', // Matches only positive integers
+    );
+    return numberRegExp.hasMatch(phoneNumber);
   }
 
   bool isEmailValid(String email) {
